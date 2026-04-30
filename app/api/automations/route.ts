@@ -11,6 +11,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/client";
+import { getCurrentUserId } from "@/lib/auth";
 import { z } from "zod";
 
 // ─── Plan Limits ────────────────────────────────────────────────────────────────
@@ -50,13 +51,8 @@ const updateAutomationSchema = z.object({
 
 // ─── Helper: Get User ID from Session ───────────────────────────────────────────
 
-/**
- * Extract userId from session/auth.
- * In Phase 2, this will use NextAuth getServerSession().
- * For now, we read from the X-User-Id header (for testing).
- */
-function getUserId(request: NextRequest): string | null {
-  return request.headers.get("x-user-id");
+async function getUserId(): Promise<string | null> {
+  return getCurrentUserId();
 }
 
 // ─── Routes ─────────────────────────────────────────────────────────────────────
@@ -64,8 +60,8 @@ function getUserId(request: NextRequest): string | null {
 /**
  * GET /api/automations — List all automations for the authenticated user
  */
-export async function GET(request: NextRequest) {
-  const userId = getUserId(request);
+export async function GET() {
+  const userId = await getUserId();
   if (!userId) {
     return NextResponse.json(
       { success: false, error: "Unauthorized" },
@@ -98,7 +94,7 @@ export async function GET(request: NextRequest) {
  * POST /api/automations — Create a new automation
  */
 export async function POST(request: NextRequest) {
-  const userId = getUserId(request);
+  const userId = await getUserId();
   if (!userId) {
     return NextResponse.json(
       { success: false, error: "Unauthorized" },
@@ -169,7 +165,7 @@ export async function POST(request: NextRequest) {
  * PATCH /api/automations?id=... — Update an existing automation
  */
 export async function PATCH(request: NextRequest) {
-  const userId = getUserId(request);
+  const userId = await getUserId();
   if (!userId) {
     return NextResponse.json(
       { success: false, error: "Unauthorized" },
@@ -231,7 +227,7 @@ export async function PATCH(request: NextRequest) {
  * DELETE /api/automations?id=... — Delete an automation
  */
 export async function DELETE(request: NextRequest) {
-  const userId = getUserId(request);
+  const userId = await getUserId();
   if (!userId) {
     return NextResponse.json(
       { success: false, error: "Unauthorized" },

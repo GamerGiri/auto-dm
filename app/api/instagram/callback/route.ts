@@ -7,13 +7,14 @@
  * 2. Exchange short-lived token for long-lived token (60 days)
  * 3. Get user info from Instagram
  * 4. Encrypt and store the token in the database
- * 5. Redirect to dashboard
+ * 5. Auto sign-in via NextAuth and redirect to dashboard
  */
 
 import { NextRequest, NextResponse } from "next/server";
 import { exchangeCodeForToken, encryptToken } from "@/lib/meta/oauth";
 import { getLongLivedToken, getUserInfo } from "@/lib/meta/client";
 import { prisma } from "@/lib/db/client";
+import { signIn } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
@@ -74,8 +75,13 @@ export async function GET(request: NextRequest) {
       `[OAuth Callback] User ${user.instagramUsername} connected successfully`
     );
 
-    // 7. Redirect to dashboard
-    // In Phase 2, this will set a session cookie via NextAuth
+    // 7. Sign in via NextAuth (sets session cookie)
+    await signIn("credentials", {
+      userId: user.id,
+      redirect: false,
+    });
+
+    // 8. Redirect to dashboard
     return NextResponse.redirect(
       `${process.env.NEXTAUTH_URL}/dashboard?connected=true`
     );
