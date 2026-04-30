@@ -8,17 +8,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/client";
 import { decryptToken } from "@/lib/meta/oauth";
 import { getUserMedia } from "@/lib/meta/client";
-
-/**
- * Get userId from session/auth header.
- * Phase 2 will use NextAuth getServerSession().
- */
-function getUserId(request: NextRequest): string | null {
-  return request.headers.get("x-user-id");
-}
+import { getCurrentUserId } from "@/lib/auth";
 
 export async function GET(request: NextRequest) {
-  const userId = getUserId(request);
+  const userId = await getCurrentUserId();
   if (!userId) {
     return NextResponse.json(
       { success: false, error: "Unauthorized" },
