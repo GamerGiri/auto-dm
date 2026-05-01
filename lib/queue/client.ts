@@ -5,6 +5,7 @@
  */
 
 import { Queue } from "bullmq";
+import { PrismaClient } from "@/app/generated/prisma/client";
 import Redis from "ioredis";
 
 let connection: Redis | null = null;
