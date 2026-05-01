@@ -2,12 +2,14 @@
 // Instagram Comment → Auto-DM SaaS
 
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider        = "prisma-client-js"
+  previewFeatures = ["accelerate"]
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")      // prisma:// URL
+  directUrl = env("DIRECT_URL")       // postgresql:// direct URL
 }
 
 model User {
